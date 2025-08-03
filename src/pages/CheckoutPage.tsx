@@ -71,21 +71,32 @@ export const CheckoutPage = () => {
     setIsSubmitting(true);
 
     try {
+      console.log('Starting order submission...', formData, state);
+      
       // Create order
+      const orderPayload = {
+        buyer_name: formData.buyerName,
+        buyer_phone: formData.buyerPhone,
+        buyer_address: formData.buyerAddress,
+        buyer_district: formData.buyerDistrict,
+        total_amount: state.total,
+        status: 'Pending'
+      };
+      
+      console.log('Order payload:', orderPayload);
+      
       const { data: orderData, error: orderError } = await supabase
         .from('orders')
-        .insert({
-          buyer_name: formData.buyerName,
-          buyer_phone: formData.buyerPhone,
-          buyer_address: formData.buyerAddress,
-          buyer_district: formData.buyerDistrict,
-          total_amount: state.total,
-          status: 'Pending'
-        })
+        .insert(orderPayload)
         .select()
         .single();
 
-      if (orderError) throw orderError;
+      console.log('Order creation result:', { orderData, orderError });
+
+      if (orderError) {
+        console.error('Order error details:', orderError);
+        throw orderError;
+      }
 
       // Create order items
       const orderItems = state.items.map(item => ({
@@ -95,11 +106,18 @@ export const CheckoutPage = () => {
         price: item.price
       }));
 
+      console.log('Order items payload:', orderItems);
+
       const { error: itemsError } = await supabase
         .from('order_items')
         .insert(orderItems);
 
-      if (itemsError) throw itemsError;
+      console.log('Order items result:', { itemsError });
+
+      if (itemsError) {
+        console.error('Items error details:', itemsError);
+        throw itemsError;
+      }
 
       // Clear cart and redirect
       dispatch({ type: 'CLEAR_CART' });
