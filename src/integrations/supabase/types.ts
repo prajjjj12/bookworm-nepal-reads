@@ -14,7 +14,144 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      admin_users: {
+        Row: {
+          created_at: string
+          id: string
+          password_hash: string
+          username: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          password_hash: string
+          username: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          password_hash?: string
+          username?: string
+        }
+        Relationships: []
+      }
+      books: {
+        Row: {
+          author: string
+          cover_image: string | null
+          created_at: string
+          description: string | null
+          genre: string
+          id: string
+          price: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          genre: string
+          id?: string
+          price: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          cover_image?: string | null
+          created_at?: string
+          description?: string | null
+          genre?: string
+          id?: string
+          price?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      order_items: {
+        Row: {
+          book_id: string
+          created_at: string
+          id: string
+          order_id: string
+          price: number
+          quantity: number
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          id?: string
+          order_id: string
+          price: number
+          quantity?: number
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          id?: string
+          order_id?: string
+          price?: number
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          buyer_address: string
+          buyer_district: string
+          buyer_name: string
+          buyer_phone: string
+          created_at: string
+          id: string
+          order_number: string
+          status: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          buyer_address: string
+          buyer_district: string
+          buyer_name: string
+          buyer_phone: string
+          created_at?: string
+          id?: string
+          order_number?: string
+          status?: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          buyer_address?: string
+          buyer_district?: string
+          buyer_name?: string
+          buyer_phone?: string
+          created_at?: string
+          id?: string
+          order_number?: string
+          status?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
