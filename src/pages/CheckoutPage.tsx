@@ -68,6 +68,13 @@ export const CheckoutPage = () => {
       return;
     }
 
+    // Validate phone number (exactly 10 digits)
+    const phoneRegex = /^[0-9]{10}$/;
+    if (!phoneRegex.test(formData.buyerPhone)) {
+      toast.error('Phone number must be exactly 10 digits');
+      return;
+    }
+
     setIsSubmitting(true);
 
     try {
@@ -188,10 +195,18 @@ export const CheckoutPage = () => {
                     <Input
                       id="buyerPhone"
                       value={formData.buyerPhone}
-                      onChange={(e) => handleInputChange('buyerPhone', e.target.value)}
-                      placeholder="e.g., 9841234567"
+                      onChange={(e) => {
+                        // Only allow numbers and limit to 10 digits
+                        const value = e.target.value.replace(/\D/g, '').slice(0, 10);
+                        handleInputChange('buyerPhone', value);
+                      }}
+                      placeholder="9841234567"
+                      maxLength={10}
                       required
                     />
+                    <p className="text-xs text-muted-foreground mt-1">
+                      Enter 10-digit phone number (numbers only)
+                    </p>
                   </div>
 
                   <div>
