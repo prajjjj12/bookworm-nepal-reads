@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 interface Order {
   id: string;
@@ -44,6 +45,7 @@ const GENRES = [
 
 export const AdminDashboard = () => {
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, logout } = useAdminAuth();
   const [activeTab, setActiveTab] = useState<'books' | 'orders'>('books');
   const [books, setBooks] = useState<Book[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
@@ -59,15 +61,24 @@ export const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    const isAuthenticated = localStorage.getItem('adminAuthenticated');
-    if (!isAuthenticated) {
+    if (!isLoading && !isAuthenticated) {
       navigate('/admin');
       return;
     }
     
-    fetchBooks();
-    fetchOrders();
-  }, [navigate]);
+    if (isAuthenticated) {
+      fetchBooks();
+      fetchOrders();
+    }
+  }, [navigate, isAuthenticated, isLoading]);
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   const fetchBooks = async () => {
     try {
@@ -193,7 +204,7 @@ export const AdminDashboard = () => {
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('adminAuthenticated');
+    logout();
     navigate('/admin');
   };
 

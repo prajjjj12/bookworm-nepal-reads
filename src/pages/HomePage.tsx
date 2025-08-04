@@ -42,7 +42,7 @@ export const HomePage = () => {
     );
   }
 
-  const recentBooks = getRecentBooks(10);
+  const recentBooks = getRecentBooks(5);
 
   return (
     <div className="min-h-screen bg-background">

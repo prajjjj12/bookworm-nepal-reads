@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Lock, BookOpen } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -6,27 +6,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
+import { useAdminAuth } from '@/hooks/useAdminAuth';
 
 export const AdminLoginPage = () => {
   const [credentials, setCredentials] = useState({ username: '', password: '' });
-  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { isAuthenticated, isLoading, login } = useAdminAuth();
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate('/admin/dashboard');
+    }
+  }, [isAuthenticated, navigate]);
+
+  const [submitting, setSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    setSubmitting(true);
 
-    // Simple authentication check (in a real app, this would be properly secured)
-    if (credentials.username === 'admin' && credentials.password === 'admin123') {
-      localStorage.setItem('adminAuthenticated', 'true');
+    const success = await login(credentials.username, credentials.password);
+    
+    if (success) {
       toast.success('Login successful!');
       navigate('/admin/dashboard');
     } else {
       toast.error('Invalid username or password');
     }
     
-    setIsLoading(false);
+    setSubmitting(false);
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-background flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex items-center justify-center">
@@ -73,18 +90,11 @@ export const AdminLoginPage = () => {
                 />
               </div>
 
-              <Button type="submit" className="w-full" disabled={isLoading}>
-                {isLoading ? 'Logging in...' : 'Login'}
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? 'Logging in...' : 'Login'}
               </Button>
             </form>
 
-            <div className="mt-6 p-4 bg-muted rounded-md">
-              <p className="text-sm text-muted-foreground text-center">
-                Demo credentials:<br />
-                Username: <code>admin</code><br />
-                Password: <code>admin123</code>
-              </p>
-            </div>
           </CardContent>
         </Card>
 

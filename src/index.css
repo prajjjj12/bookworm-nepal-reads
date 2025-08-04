@@ -93,7 +93,8 @@
 @layer components {
   /* Bookworm specific components */
   .book-grid {
-    @apply grid grid-cols-5 gap-6;
+    @apply grid gap-6;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
   }
   
   .genre-tag {
