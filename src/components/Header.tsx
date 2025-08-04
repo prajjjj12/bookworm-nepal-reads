@@ -27,7 +27,11 @@ export const Header = ({ onSearch }: HeaderProps) => {
         <div className="flex items-center justify-between">
           <div 
             className="flex items-center gap-3 cursor-pointer"
-            onClick={() => navigate('/')}
+            onClick={() => {
+              navigate('/');
+              setSearchQuery('');
+              onSearch?.('');
+            }}
           >
             <BookOpen className="h-8 w-8 text-primary" />
             <div>
@@ -53,7 +57,11 @@ export const Header = ({ onSearch }: HeaderProps) => {
           <nav className="flex items-center gap-6">
             <Button 
               variant="ghost" 
-              onClick={() => navigate('/')}
+              onClick={() => {
+                navigate('/');
+                setSearchQuery('');
+                onSearch?.('');
+              }}
               className="text-foreground hover:text-primary"
             >
               Home
