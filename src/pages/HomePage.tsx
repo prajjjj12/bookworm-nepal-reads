@@ -89,6 +89,19 @@ export const HomePage = () => {
           </div>
         )}
       </main>
+
+      {/* Footer */}
+      <footer className="bg-muted/50 border-t mt-16">
+        <div className="container mx-auto px-6 py-8">
+          <div className="text-center text-sm text-muted-foreground">
+            <p className="mb-2">
+              For any inquiries: <span className="font-medium">014459394</span> | 
+              Email: <span className="font-medium">support@bookworm.com</span>
+            </p>
+            <p>© 2024 Bookworm Nepal. All rights reserved.</p>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 };

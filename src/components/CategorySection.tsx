@@ -7,7 +7,7 @@ interface CategorySectionProps {
   showAll?: boolean;
 }
 
-export const CategorySection = ({ title, books, showAll = false }: CategorySectionProps) => {
+export const CategorySection = ({ title, books, showAll = true }: CategorySectionProps) => {
   const displayBooks = showAll ? books : books.slice(0, 5);
 
   if (books.length === 0) return null;
@@ -26,14 +26,6 @@ export const CategorySection = ({ title, books, showAll = false }: CategorySecti
           <BookCard key={book.id} book={book} />
         ))}
       </div>
-      
-      {!showAll && books.length > 5 && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-muted-foreground">
-            Showing 5 of {books.length} books
-          </p>
-        </div>
-      )}
     </section>
   );
 };
