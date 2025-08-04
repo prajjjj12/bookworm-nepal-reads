@@ -18,19 +18,19 @@ export type Database = {
         Row: {
           created_at: string
           id: string
-          password_hash: string
+          password: string
           username: string
         }
         Insert: {
           created_at?: string
           id?: string
-          password_hash: string
+          password: string
           username: string
         }
         Update: {
           created_at?: string
           id?: string
-          password_hash?: string
+          password?: string
           username?: string
         }
         Relationships: []

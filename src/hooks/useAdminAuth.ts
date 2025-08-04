@@ -28,21 +28,12 @@ export const useAdminAuth = () => {
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
       console.log('Login attempt:', { username, password });
-      
-      // Hash the password for comparison
-      const encoder = new TextEncoder();
-      const data = encoder.encode(password);
-      const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-      const hashArray = Array.from(new Uint8Array(hashBuffer));
-      const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-      
-      console.log('Generated hash:', hashHex);
 
       const { data: adminUser, error } = await supabase
         .from('admin_users')
         .select('*')
         .eq('username', username)
-        .eq('password_hash', hashHex)
+        .eq('password', password)
         .maybeSingle();
 
       console.log('Database query result:', { adminUser, error });
