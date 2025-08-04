@@ -9,6 +9,14 @@ import nonfictionImage from '@/assets/book-nonfiction.jpg';
 import textbookImage from '@/assets/book-textbook.jpg';
 import selfhelpImage from '@/assets/book-selfhelp.jpg';
 import childrenImage from '@/assets/book-children.jpg';
+import mysteryImage from '@/assets/book-mystery.jpg';
+import romanceImage from '@/assets/book-romance.jpg';
+import fantasyImage from '@/assets/book-fantasy.jpg';
+import scienceImage from '@/assets/book-science.jpg';
+import biographyImage from '@/assets/book-biography.jpg';
+import historyImage from '@/assets/book-history.jpg';
+import poetryImage from '@/assets/book-poetry.jpg';
+import horrorImage from '@/assets/book-horror.jpg';
 
 interface BookCardProps {
   book: Book;
@@ -31,21 +39,21 @@ const getGenreColor = (genre: string) => {
   }
 };
 
-const getDefaultImage = (genre: string): string => {
-  switch (genre.toLowerCase()) {
-    case 'fiction':
-      return fictionImage;
-    case 'non-fiction':
-      return nonfictionImage;
-    case 'school textbooks':
-      return textbookImage;
-    case 'self-help & motivational':
-      return selfhelpImage;
-    case "children's books":
-      return childrenImage;
-    default:
-      return fictionImage;
-  }
+const getDefaultImage = (book: Book): string => {
+  // Create a simple hash from book title + author for consistency
+  const bookHash = (book.title + book.author).split('').reduce((a, b) => {
+    a = ((a << 5) - a) + b.charCodeAt(0);
+    return a & a;
+  }, 0);
+  
+  const images = [
+    fictionImage, nonfictionImage, textbookImage, selfhelpImage, 
+    childrenImage, mysteryImage, romanceImage, fantasyImage,
+    scienceImage, biographyImage, historyImage, poetryImage, horrorImage
+  ];
+  
+  // Use absolute value to ensure positive index
+  return images[Math.abs(bookHash) % images.length];
 };
 
 export const BookCard = ({ book }: BookCardProps) => {
@@ -61,12 +69,12 @@ export const BookCard = ({ book }: BookCardProps) => {
       <CardContent className="p-4 flex-1">
         <div className="aspect-[3/4] bg-muted rounded-md mb-3 overflow-hidden">
           <img 
-            src={book.cover_image || getDefaultImage(book.genre)} 
+            src={book.cover_image || getDefaultImage(book)} 
             alt={book.title}
             className="w-full h-full object-cover"
             onError={(e) => {
               const target = e.target as HTMLImageElement;
-              target.src = getDefaultImage(book.genre);
+              target.src = getDefaultImage(book);
             }}
           />
         </div>
