@@ -50,16 +50,18 @@ export const HomePage = () => {
       <Header onSearch={handleSearch} />
       
       <main className="container mx-auto px-6 py-8">
-        {/* Hero Section */}
-        <section className="mb-12 text-center">
-          <h1 className="text-4xl font-bold text-foreground mb-4">
-            Welcome to Bookworm Nepal
-          </h1>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Discover your next great read from our collection of Nepali and international books. 
-            From classic literature to educational textbooks, we have something for every reader.
-          </p>
-        </section>
+        {/* Hero Section - Only show when not searching */}
+        {!searchQuery && (
+          <section className="mb-12 text-center">
+            <h1 className="text-4xl font-bold text-foreground mb-4">
+              Welcome to Bookworm Nepal
+            </h1>
+            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
+              Discover your next great read from our collection of Nepali and international books. 
+              From classic literature to educational textbooks, we have something for every reader.
+            </p>
+          </section>
+        )}
 
         {/* Search Results */}
         {searchQuery ? (
