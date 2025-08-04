@@ -1,13 +1,25 @@
-import { ShoppingCart, BookOpen } from 'lucide-react';
+import { ShoppingCart, BookOpen, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
 import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
 
-export const Header = () => {
+interface HeaderProps {
+  onSearch?: (query: string) => void;
+}
+
+export const Header = ({ onSearch }: HeaderProps) => {
   const { state } = useCart();
   const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
   const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    onSearch?.(searchQuery);
+  };
 
   return (
     <header className="border-b bg-card shadow-sm">
@@ -23,6 +35,20 @@ export const Header = () => {
               <p className="text-sm text-muted-foreground">Your Gateway to Knowledge</p>
             </div>
           </div>
+
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className="flex-1 max-w-md mx-8">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                type="text"
+                placeholder="Search books..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+          </form>
 
           <nav className="flex items-center gap-6">
             <Button 

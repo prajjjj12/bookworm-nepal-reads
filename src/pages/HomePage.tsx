@@ -1,5 +1,6 @@
 import { Header } from '@/components/Header';
 import { CategorySection } from '@/components/CategorySection';
+import { BookCard } from '@/components/BookCard';
 import { useBooks } from '@/hooks/useBooks';
 
 const GENRES = [
@@ -11,7 +12,7 @@ const GENRES = [
 ];
 
 export const HomePage = () => {
-  const { books, loading, error, getBooksByGenre, getRecentBooks } = useBooks();
+  const { books, allBooks, loading, error, searchQuery, getBooksByGenre, getRecentBooks, handleSearch } = useBooks();
 
   if (loading) {
     return (
@@ -46,7 +47,7 @@ export const HomePage = () => {
 
   return (
     <div className="min-h-screen bg-background">
-      <Header />
+      <Header onSearch={handleSearch} />
       
       <main className="container mx-auto px-6 py-8">
         {/* Hero Section */}
@@ -60,27 +61,49 @@ export const HomePage = () => {
           </p>
         </section>
 
-        {/* Recently Published Section */}
-        {recentBooks.length > 0 && (
-          <CategorySection 
-            title="📚 Recently Published" 
-            books={recentBooks}
-          />
+        {/* Search Results */}
+        {searchQuery ? (
+          <section className="mb-12">
+            <h2 className="text-2xl font-bold text-foreground mb-6">
+              Search Results for "{searchQuery}"
+            </h2>
+            {books.length > 0 ? (
+              <div className="book-grid">
+                {books.map((book) => (
+                  <BookCard key={book.id} book={book} />
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">No books found matching your search.</p>
+              </div>
+            )}
+          </section>
+        ) : (
+          <>
+            {/* Recently Published Section */}
+            {recentBooks.length > 0 && (
+              <CategorySection 
+                title="📚 Recently Published" 
+                books={recentBooks}
+              />
+            )}
+
+            {/* Category Sections */}
+            {GENRES.map(genre => {
+              const categoryBooks = getBooksByGenre(genre);
+              return (
+                <CategorySection 
+                  key={genre}
+                  title={genre}
+                  books={categoryBooks}
+                />
+              );
+            })}
+          </>
         )}
 
-        {/* Category Sections */}
-        {GENRES.map(genre => {
-          const categoryBooks = getBooksByGenre(genre);
-          return (
-            <CategorySection 
-              key={genre}
-              title={genre}
-              books={categoryBooks}
-            />
-          );
-        })}
-
-        {books.length === 0 && (
+        {allBooks.length === 0 && (
           <div className="text-center py-12">
             <h3 className="text-xl font-semibold mb-2">No books available</h3>
             <p className="text-muted-foreground">
