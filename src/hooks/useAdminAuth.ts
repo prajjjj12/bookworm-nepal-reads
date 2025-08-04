@@ -27,12 +27,16 @@ export const useAdminAuth = () => {
 
   const login = async (username: string, password: string): Promise<boolean> => {
     try {
+      console.log('Login attempt:', { username, password });
+      
       // Hash the password for comparison
       const encoder = new TextEncoder();
       const data = encoder.encode(password);
       const hashBuffer = await crypto.subtle.digest('SHA-256', data);
       const hashArray = Array.from(new Uint8Array(hashBuffer));
       const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+      
+      console.log('Generated hash:', hashHex);
 
       const { data: adminUser, error } = await supabase
         .from('admin_users')
@@ -41,7 +45,10 @@ export const useAdminAuth = () => {
         .eq('password_hash', hashHex)
         .single();
 
+      console.log('Database query result:', { adminUser, error });
+
       if (error || !adminUser) {
+        console.log('Login failed - no matching user found');
         return false;
       }
 
@@ -54,6 +61,7 @@ export const useAdminAuth = () => {
       
       localStorage.setItem('adminSession', JSON.stringify(session));
       setIsAuthenticated(true);
+      console.log('Login successful');
       return true;
     } catch (error) {
       console.error('Admin login error:', error);
