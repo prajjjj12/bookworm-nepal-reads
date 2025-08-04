@@ -43,7 +43,7 @@ export const useAdminAuth = () => {
         .select('*')
         .eq('username', username)
         .eq('password_hash', hashHex)
-        .single();
+        .maybeSingle();
 
       console.log('Database query result:', { adminUser, error });
 
