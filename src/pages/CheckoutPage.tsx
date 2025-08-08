@@ -12,6 +12,7 @@ import { useBooks } from '@/hooks/useBooks';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { getRecommendationsBySimilarity } from '@/utils/similarity';
 
 const NEPAL_DISTRICTS = [
   'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Chitwan', 'Pokhara', 'Butwal', 'Biratnagar',
@@ -23,7 +24,7 @@ const NEPAL_DISTRICTS = [
 
 export const CheckoutPage = () => {
   const { state, dispatch } = useCart();
-  const { getBooksByGenre } = useBooks();
+  const { allBooks } = useBooks();
   const navigate = useNavigate();
   
   const [formData, setFormData] = useState({
@@ -40,24 +41,10 @@ export const CheckoutPage = () => {
   };
 
   const getRecommendedBooks = () => {
-    if (state.items.length === 0) return [];
+    if (state.items.length === 0 || allBooks.length === 0) return [];
     
-    // Get unique genres from cart items
-    const cartGenres = [...new Set(state.items.map(item => item.genre))];
-    
-    // Get books from the same genres, excluding items already in cart
-    const recommended = cartGenres.flatMap(genre => 
-      getBooksByGenre(genre).filter(book => 
-        !state.items.some(cartItem => cartItem.id === book.id)
-      )
-    );
-    
-    // Remove duplicates and limit to 5
-    const uniqueRecommended = recommended.filter((book, index, self) => 
-      index === self.findIndex(b => b.id === book.id)
-    ).slice(0, 5);
-    
-    return uniqueRecommended;
+    // Use cosine similarity to get recommendations
+    return getRecommendationsBySimilarity(state.items, allBooks, 5);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -286,7 +273,7 @@ export const CheckoutPage = () => {
                 <CardHeader>
                   <CardTitle className="text-lg">📚 Books You May Also Like</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    Based on your interest in {state.items[0]?.genre}
+                    AI-powered recommendations based on your cart items
                   </p>
                 </CardHeader>
                 <CardContent>
