@@ -46,9 +46,10 @@ const GENRES = [
 export const AdminDashboard = () => {
   const navigate = useNavigate();
   const { isAuthenticated, isLoading, logout } = useAdminAuth();
-  const [activeTab, setActiveTab] = useState<'books' | 'orders'>('books');
+  const [activeTab, setActiveTab] = useState<'books' | 'orders' | 'users'>('books');
   const [books, setBooks] = useState<Book[]>([]);
   const [orders, setOrders] = useState<Order[]>([]);
+  const [users, setUsers] = useState<any[]>([]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [editingBook, setEditingBook] = useState<Book | null>(null);
   const [newBook, setNewBook] = useState({
@@ -69,6 +70,7 @@ export const AdminDashboard = () => {
     if (isAuthenticated) {
       fetchBooks();
       fetchOrders();
+      fetchUsers();
     }
   }, [navigate, isAuthenticated, isLoading]);
 
@@ -107,6 +109,21 @@ export const AdminDashboard = () => {
     } catch (error) {
       console.error('Error fetching orders:', error);
       toast.error('Failed to fetch orders');
+    }
+  };
+
+  const fetchUsers = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('*')
+        .order('created_at', { ascending: false });
+      
+      if (error) throw error;
+      setUsers(data || []);
+    } catch (error) {
+      console.error('Error fetching users:', error);
+      toast.error('Failed to fetch users');
     }
   };
 
@@ -244,6 +261,12 @@ export const AdminDashboard = () => {
           >
             <Package className="h-4 w-4 mr-2" />
             Orders ({orders.length})
+          </Button>
+          <Button
+            variant={activeTab === 'users' ? 'default' : 'outline'}
+            onClick={() => setActiveTab('users')}
+          >
+            Users
           </Button>
         </div>
 
@@ -426,6 +449,42 @@ export const AdminDashboard = () => {
                   </CardContent>
                 </Card>
               ))}
+            </div>
+          </div>
+        )}
+
+        {/* Users Management */}
+        {activeTab === 'users' && (
+          <div>
+            <h2 className="text-xl font-semibold mb-6">Users Management</h2>
+            <div className="grid gap-4">
+              {users.map((user) => (
+                <Card key={user.id}>
+                  <CardContent className="p-4">
+                    <div className="flex justify-between items-start">
+                      <div className="flex-1">
+                        <div className="grid grid-cols-2 gap-4">
+                          <div>
+                            <h3 className="font-semibold">{user.name}</h3>
+                            <p className="text-sm text-muted-foreground">ID: {user.user_id}</p>
+                            <p className="text-sm">📞 {user.phone || 'Not provided'}</p>
+                            <p className="text-sm">📍 {user.location || 'Not provided'}</p>
+                          </div>
+                          <div>
+                            <p className="text-sm"><strong>Joined:</strong> {new Date(user.created_at).toLocaleDateString()}</p>
+                            <p className="text-sm"><strong>Updated:</strong> {new Date(user.updated_at).toLocaleDateString()}</p>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+              {users.length === 0 && (
+                <div className="text-center py-8 text-muted-foreground">
+                  No users found.
+                </div>
+              )}
             </div>
           </div>
         )}

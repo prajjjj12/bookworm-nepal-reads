@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { ArrowLeft, CreditCard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,11 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Header } from '@/components/Header';
 import { BookCard } from '@/components/BookCard';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useBooks } from '@/hooks/useBooks';
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { getRecommendationsBySimilarity } from '@/utils/similarity';
+import { getRecommendationsBySimilarity, cosineSimilarity, createBookVector, createCombinedVector } from '@/utils/similarity';
 
 const NEPAL_DISTRICTS = [
   'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Chitwan', 'Pokhara', 'Butwal', 'Biratnagar',
@@ -24,15 +25,37 @@ const NEPAL_DISTRICTS = [
 
 export const CheckoutPage = () => {
   const { state, dispatch } = useCart();
+  const { user, profile } = useAuth();
   const { allBooks } = useBooks();
   const navigate = useNavigate();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!user) {
+      toast.error('Please sign in to proceed with checkout');
+      navigate('/auth');
+      return;
+    }
+  }, [user, navigate]);
   
   const [formData, setFormData] = useState({
-    buyerName: '',
-    buyerPhone: '',
+    buyerName: profile?.name || '',
+    buyerPhone: profile?.phone || '',
     buyerAddress: '',
-    buyerDistrict: ''
+    buyerDistrict: profile?.location || ''
   });
+
+  // Update form data when profile loads
+  useEffect(() => {
+    if (profile) {
+      setFormData(prev => ({
+        ...prev,
+        buyerName: profile.name || prev.buyerName,
+        buyerPhone: profile.phone || prev.buyerPhone,
+        buyerDistrict: profile.location || prev.buyerDistrict
+      }));
+    }
+  }, [profile]);
   
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -40,11 +63,68 @@ export const CheckoutPage = () => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
-  const getRecommendedBooks = () => {
-    if (state.items.length === 0 || allBooks.length === 0) return [];
+  const getRecommendedBooks = async () => {
+    if (!user || state.items.length === 0 || allBooks.length === 0) return [];
     
-    // Use cosine similarity to get recommendations
-    return getRecommendationsBySimilarity(state.items, allBooks, 5);
+    try {
+      // Get user's purchase history
+      const { data, error } = await supabase
+        .from('orders')
+        .select(`
+          order_items (
+            books (*)
+          )
+        `)
+        .eq('user_id', user.id);
+
+      if (error) {
+        console.error('Error fetching purchase history:', error);
+        return getRecommendationsBySimilarity(state.items, allBooks, 5);
+      }
+
+      // Extract purchased books
+      const purchasedBooks: any[] = [];
+      const bookIds = new Set<string>();
+
+      data?.forEach(order => {
+        order.order_items?.forEach(item => {
+          if (item.books && !bookIds.has(item.books.id)) {
+            bookIds.add(item.books.id);
+            purchasedBooks.push(item.books);
+          }
+        });
+      });
+
+      if (purchasedBooks.length === 0) {
+        // No purchase history, use cart-based recommendations
+        return getRecommendationsBySimilarity(state.items, allBooks, 5);
+      }
+
+      // Use purchase history for recommendations
+      const historyVector = createCombinedVector(purchasedBooks);
+      
+      // Filter out books already purchased or in cart
+      const excludeIds = new Set([
+        ...purchasedBooks.map(book => book.id),
+        ...state.items.map(book => book.id)
+      ]);
+      
+      const availableBooks = allBooks.filter(book => !excludeIds.has(book.id));
+      
+      // Calculate similarity scores
+      const similarities = availableBooks.map(book => ({
+        book,
+        similarity: cosineSimilarity(historyVector, createBookVector(book))
+      }));
+      
+      return similarities
+        .sort((a, b) => b.similarity - a.similarity)
+        .slice(0, 5)
+        .map(item => item.book);
+    } catch (error) {
+      console.error('Error in getRecommendedBooks:', error);
+      return getRecommendationsBySimilarity(state.items, allBooks, 5);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -74,7 +154,8 @@ export const CheckoutPage = () => {
         buyer_address: formData.buyerAddress,
         buyer_district: formData.buyerDistrict,
         total_amount: state.total,
-        status: 'Pending'
+        status: 'Pending',
+        user_id: user?.id
       };
       
       console.log('Order payload:', orderPayload);
@@ -130,11 +211,19 @@ export const CheckoutPage = () => {
     }
   };
 
-  const recommendedBooks = getRecommendedBooks();
+  const [recommendedBooks, setRecommendedBooks] = useState<any[]>([]);
+
+  useEffect(() => {
+    getRecommendedBooks().then(setRecommendedBooks);
+  }, [user, state.items, allBooks]);
 
   if (state.items.length === 0) {
     navigate('/cart');
     return null;
+  }
+
+  if (!user) {
+    return null; // Will redirect in useEffect
   }
 
   return (
@@ -273,7 +362,7 @@ export const CheckoutPage = () => {
                 <CardHeader>
                   <CardTitle className="text-lg">📚 Books You May Also Like</CardTitle>
                   <p className="text-sm text-muted-foreground">
-                    AI-powered recommendations based on your cart items
+                    Personalized recommendations based on your purchase history and current cart
                   </p>
                 </CardHeader>
                 <CardContent>

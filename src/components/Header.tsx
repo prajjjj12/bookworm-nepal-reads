@@ -1,8 +1,9 @@
-import { ShoppingCart, BookOpen, Search } from 'lucide-react';
+import { ShoppingCart, BookOpen, Search, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { useCart } from '@/contexts/CartContext';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
@@ -12,6 +13,7 @@ interface HeaderProps {
 
 export const Header = ({ onSearch }: HeaderProps) => {
   const { state } = useCart();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
   const itemCount = state.items.reduce((sum, item) => sum + item.quantity, 0);
@@ -73,6 +75,24 @@ export const Header = ({ onSearch }: HeaderProps) => {
             >
               Admin
             </Button>
+            {user ? (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/profile')}
+                className="text-foreground hover:text-primary flex items-center gap-2"
+              >
+                <User className="h-4 w-4" />
+                Profile
+              </Button>
+            ) : (
+              <Button
+                variant="ghost"
+                onClick={() => navigate('/auth')}
+                className="text-foreground hover:text-primary"
+              >
+                Sign In
+              </Button>
+            )}
             <Button
               variant="outline"
               onClick={() => navigate('/cart')}
