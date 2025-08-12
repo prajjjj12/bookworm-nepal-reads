@@ -125,6 +125,7 @@ export type Database = {
           status: string
           total_amount: number
           updated_at: string
+          user_id: string | null
         }
         Insert: {
           buyer_address: string
@@ -137,6 +138,7 @@ export type Database = {
           status?: string
           total_amount: number
           updated_at?: string
+          user_id?: string | null
         }
         Update: {
           buyer_address?: string
@@ -149,6 +151,37 @@ export type Database = {
           status?: string
           total_amount?: number
           updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          id: string
+          location: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          location?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
