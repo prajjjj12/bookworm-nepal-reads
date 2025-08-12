@@ -12,6 +12,8 @@ import { AdminLoginPage } from "./pages/AdminLoginPage";
 import { AdminDashboard } from "./pages/AdminDashboard";
 import AuthPage from "./pages/AuthPage";
 import ProfilePage from "./pages/ProfilePage";
+import OTPVerificationPage from "./pages/OTPVerificationPage";
+import OTPCompletePage from "./pages/OTPCompletePage";
 import NotFound from "./pages/NotFound";
 
 const App = () => (
@@ -29,6 +31,8 @@ const App = () => (
             <Route path="/admin" element={<AdminLoginPage />} />
             <Route path="/admin/dashboard" element={<AdminDashboard />} />
             <Route path="/auth" element={<AuthPage />} />
+            <Route path="/verify-otp" element={<OTPVerificationPage />} />
+            <Route path="/complete-signup" element={<OTPCompletePage />} />
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="*" element={<NotFound />} />
           </Routes>

@@ -1,19 +1,39 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { Header } from '@/components/Header';
+
+const NEPAL_DISTRICTS = [
+  'Kathmandu', 'Lalitpur', 'Bhaktapur', 'Chitwan', 'Pokhara', 'Butwal', 'Biratnagar',
+  'Janakpur', 'Dharan', 'Birgunj', 'Hetauda', 'Dhangadhi', 'Bharatpur', 'Lumbini',
+  'Nepalgunj', 'Gorkha', 'Lamjung', 'Tanahun', 'Syangja', 'Parbat', 'Baglung',
+  'Myagdi', 'Mustang', 'Manang', 'Rasuwa', 'Nuwakot', 'Dhading', 'Makwanpur',
+  'Sindhuli', 'Ramechhap', 'Dolakha', 'Sindhupalchok', 'Kavrepalanchok'
+];
 
 const AuthPage = () => {
   const { user, signIn, signUp } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
+
+  // Show verification success message if coming from OTP page
+  useEffect(() => {
+    if (location.state?.verified && location.state?.message) {
+      toast({
+        title: "Success",
+        description: location.state.message,
+      });
+    }
+  }, [location.state, toast]);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -29,6 +49,18 @@ const AuthPage = () => {
     const formData = new FormData(e.currentTarget);
     const email = formData.get('signin-email') as string;
     const password = formData.get('signin-password') as string;
+
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      toast({
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
 
     const { error } = await signIn(email, password);
     
@@ -59,20 +91,57 @@ const AuthPage = () => {
     const phone = formData.get('signup-phone') as string;
     const location = formData.get('signup-location') as string;
 
-    const { error } = await signUp(email, password, name, phone, location);
-    
-    if (error) {
+    // Email validation
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
       toast({
-        title: "Sign Up Failed",
-        description: error.message,
+        title: "Invalid Email",
+        description: "Please enter a valid email address",
         variant: "destructive",
       });
-    } else {
-      toast({
-        title: "Account Created!",
-        description: "Please check your email to verify your account.",
-      });
+      setLoading(false);
+      return;
     }
+
+    // Phone validation - must be 10 digits starting with 98
+    const phoneRegex = /^98[0-9]{8}$/;
+    if (!phoneRegex.test(phone)) {
+      toast({
+        title: "Invalid Phone Number",
+        description: "Phone number must be 10 digits starting with 98",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Password validation
+    if (password.length < 6) {
+      toast({
+        title: "Invalid Password",
+        description: "Password must be at least 6 characters long",
+        variant: "destructive",
+      });
+      setLoading(false);
+      return;
+    }
+
+    // Don't actually create account yet, redirect to OTP verification
+    toast({
+      title: "Verification Required",
+      description: "Please verify your email with the OTP sent to you.",
+    });
+
+    // Redirect to OTP verification page
+    navigate('/verify-otp', { 
+      state: { 
+        email, 
+        phone, 
+        name, 
+        password, 
+        location 
+      }
+    });
     setLoading(false);
   };
 
@@ -172,17 +241,37 @@ const AuthPage = () => {
                         id="signup-phone"
                         name="signup-phone"
                         type="tel"
-                        placeholder="Enter your phone number"
+                        required
+                        placeholder="9841234567"
+                        maxLength={10}
+                        onChange={(e) => {
+                          // Only allow numbers and ensure it starts with 98
+                          let value = e.target.value.replace(/\D/g, '');
+                          if (value.length > 0 && !value.startsWith('98')) {
+                            value = '98' + value.replace(/^98/, '');
+                          }
+                          value = value.slice(0, 10);
+                          e.target.value = value;
+                        }}
                       />
+                      <p className="text-xs text-muted-foreground">
+                        Must be 10 digits starting with 98
+                      </p>
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="signup-location">Location</Label>
-                      <Input
-                        id="signup-location"
-                        name="signup-location"
-                        type="text"
-                        placeholder="Enter your location"
-                      />
+                      <Label htmlFor="signup-location">District</Label>
+                      <Select name="signup-location" required>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select your district" />
+                        </SelectTrigger>
+                        <SelectContent className="bg-background border z-50">
+                          {NEPAL_DISTRICTS.map((district) => (
+                            <SelectItem key={district} value={district}>
+                              {district}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                     </div>
                     <Button type="submit" className="w-full" disabled={loading}>
                       {loading ? 'Creating Account...' : 'Create Account'}
