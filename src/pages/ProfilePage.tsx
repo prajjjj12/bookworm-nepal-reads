@@ -155,48 +155,38 @@ const ProfilePage = () => {
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
-                  <form onSubmit={handleUpdateProfile} className="space-y-4">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <div className="space-y-2">
-                        <Label htmlFor="name">Name</Label>
-                        <Input
-                          id="name"
-                          name="name"
-                          defaultValue={profile.name}
-                          required
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">Name</Label>
+                        <div className="flex items-center gap-2">
+                          <User className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{profile.name}</span>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="email">Email</Label>
-                        <Input
-                          id="email"
-                          value={user.email}
-                          disabled
-                          className="bg-muted"
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">Email</Label>
+                        <div className="flex items-center gap-2">
+                          <Mail className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{user.email}</span>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="phone">Phone Number</Label>
-                        <Input
-                          id="phone"
-                          name="phone"
-                          type="tel"
-                          defaultValue={profile.phone || ''}
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">Phone Number</Label>
+                        <div className="flex items-center gap-2">
+                          <Phone className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{profile.phone || 'Not provided'}</span>
+                        </div>
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="location">Location</Label>
-                        <Input
-                          id="location"
-                          name="location"
-                          defaultValue={profile.location || ''}
-                        />
+                        <Label className="text-sm font-medium text-muted-foreground">District</Label>
+                        <div className="flex items-center gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-sm font-medium">{profile.location || 'Not provided'}</span>
+                        </div>
                       </div>
                     </div>
-                    <Button type="submit" disabled={loading}>
-                      {loading ? 'Updating...' : 'Update Profile'}
-                    </Button>
-                  </form>
+                  </div>
                 </CardContent>
               </Card>
             </TabsContent>

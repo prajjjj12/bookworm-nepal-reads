@@ -68,13 +68,6 @@ export const Header = ({ onSearch }: HeaderProps) => {
             >
               Home
             </Button>
-            <Button 
-              variant="ghost" 
-              onClick={() => navigate('/admin')}
-              className="text-foreground hover:text-primary"
-            >
-              Admin
-            </Button>
             {user ? (
               <Button
                 variant="ghost"

@@ -220,6 +220,31 @@ export const AdminDashboard = () => {
     }
   };
 
+  const handleDeleteUser = async (userId: string) => {
+    if (!confirm('Are you sure you want to delete this user? This action cannot be undone.')) return;
+
+    try {
+      // First delete from profiles table
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .delete()
+        .eq('user_id', userId);
+
+      if (profileError) throw profileError;
+
+      // Then delete from auth.users table
+      const { error: userError } = await supabase.auth.admin.deleteUser(userId);
+
+      if (userError) throw userError;
+
+      toast.success('User deleted successfully');
+      fetchUsers();
+    } catch (error) {
+      console.error('Error deleting user:', error);
+      toast.error('Failed to delete user');
+    }
+  };
+
   const handleLogout = () => {
     logout();
     navigate('/admin');
@@ -475,9 +500,18 @@ export const AdminDashboard = () => {
                             <p className="text-sm"><strong>Updated:</strong> {new Date(user.updated_at).toLocaleDateString()}</p>
                           </div>
                         </div>
-                      </div>
-                    </div>
-                  </CardContent>
+                       </div>
+                       <div className="flex gap-2">
+                         <Button
+                           variant="outline"
+                           size="sm"
+                           onClick={() => handleDeleteUser(user.user_id)}
+                         >
+                           <Trash2 className="h-4 w-4" />
+                         </Button>
+                       </div>
+                     </div>
+                   </CardContent>
                 </Card>
               ))}
               {users.length === 0 && (

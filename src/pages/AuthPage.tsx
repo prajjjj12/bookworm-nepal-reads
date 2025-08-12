@@ -254,9 +254,6 @@ const AuthPage = () => {
                           e.target.value = value;
                         }}
                       />
-                      <p className="text-xs text-muted-foreground">
-                        Must be 10 digits starting with 98
-                      </p>
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="signup-location">District</Label>

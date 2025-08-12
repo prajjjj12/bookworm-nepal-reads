@@ -42,7 +42,7 @@ const OTPVerificationPage = () => {
     if (otp !== '1234') {
       toast({
         title: "Invalid OTP",
-        description: "Please enter the correct OTP: 1234",
+        description: "Please enter the correct OTP.",
         variant: "destructive",
       });
       setLoading(false);
@@ -65,7 +65,7 @@ const OTPVerificationPage = () => {
   const handleResendOTP = () => {
     toast({
       title: "OTP Resent",
-      description: "A new OTP has been sent to your email. Use 1234 to verify.",
+      description: "A new OTP has been sent to your email.",
     });
   };
 
@@ -94,10 +94,6 @@ const OTPVerificationPage = () => {
                 We've sent a verification code to your email:
                 <br />
                 <strong>{email}</strong>
-                <br />
-                <span className="text-sm text-muted-foreground mt-2 block">
-                  For this demo, use OTP: <strong>1234</strong>
-                </span>
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -112,7 +108,7 @@ const OTPVerificationPage = () => {
                       const value = e.target.value.replace(/\D/g, '').slice(0, 4);
                       setOtp(value);
                     }}
-                    placeholder="1234"
+                    placeholder="Enter code"
                     maxLength={4}
                     className="text-center text-2xl font-mono tracking-widest"
                     required
